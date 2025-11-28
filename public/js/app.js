@@ -14,7 +14,8 @@ const views = {
 
 const forms = {
     login: document.getElementById('login-form'),
-    addBook: document.getElementById('add-book-form')
+    addBook: document.getElementById('add-book-form'),
+    addUser: document.getElementById('add-user-form')
 };
 
 const lists = {
@@ -84,6 +85,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         if (btn.dataset.tab === 'fines' && currentUser.role === 'admin') {
             loadAllTransactions();
         }
+        if (btn.dataset.tab === 'users' && currentUser.role === 'admin') {
+            loadAllUsers();
+        }
     });
 });
 
@@ -122,6 +126,36 @@ forms.addBook.addEventListener('submit', async (e) => {
     forms.addBook.reset();
     loadBooks();
 });
+
+// Add User Form Handler
+if (forms.addUser) {
+    forms.addUser.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('new-user-username').value;
+        const password = document.getElementById('new-user-password').value;
+        const role = document.getElementById('new-user-role').value;
+
+        try {
+            const res = await fetch(`${API_URL}/users/add`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ username, password, role })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            alert(`User "${username}" added successfully!`);
+            forms.addUser.reset();
+            loadAllUsers();
+        } catch (err) {
+            alert(`Error: ${err.message}`);
+        }
+    });
+}
 
 // Print Store Event Listeners
 let selectedPrintFile = null;
@@ -631,6 +665,77 @@ async function loadAllTransactions() {
         }
     }
 }
+
+// Socket.io Real-time Updates
+// Load All Users (Admin only)
+async function loadAllUsers() {
+    try {
+        const res = await fetch(`${API_URL}/users/all`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || 'Failed to fetch users');
+        }
+
+        const users = await res.json();
+
+        const container = document.getElementById('all-users');
+        if (!container) return;
+
+        container.innerHTML = users.map(user => {
+            const createdDate = new Date(user.created_at).toLocaleDateString();
+            const isCurrentUser = user.id === currentUser.id;
+
+            const roleColor = user.role === 'admin' ? '#ef4444' : user.role === 'faculty' ? '#8b5cf6' : '#22c55e';
+
+            return `
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <span style="padding: 0.25rem 0.75rem; background: ${roleColor}; color: white; font-size: 0.75rem; font-weight: 600; border-radius: 12px; text-transform: uppercase;">${user.role}</span>
+                    ${isCurrentUser ? '<span style="color: var(--primary); font-size: 0.75rem; font-weight: 600;">YOU</span>' : ''}
+                </div>
+                <h3>${user.username}</h3>
+                <p class="meta">👤 User ID: ${user.id}</p>
+                <p class="meta">📅 Created: ${createdDate}</p>
+                ${!isCurrentUser ? `<button onclick="deleteUser(${user.id}, '${user.username}')" style="width: 100%; margin-top: 0.75rem; background-color: #ef4444;">Delete User</button>` : ''}
+            </div>
+        `}).join('');
+
+        if (users.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No users found.</p>';
+        }
+    } catch (err) {
+        console.error('Error loading users:', err);
+        const container = document.getElementById('all-users');
+        if (container) {
+            container.innerHTML = `<p style="text-align: center; color: #ef4444; padding: 2rem;">Error: ${err.message}</p>`;
+        }
+    }
+}
+
+// Delete User Function
+window.deleteUser = async (userId, username) => {
+    if (!confirm(`Are you sure you want to delete user "${username}"?\n\nThis action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/users/${userId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        alert(`User "${username}" deleted successfully`);
+        loadAllUsers();
+    } catch (err) {
+        alert(`Error: ${err.message}`);
+    }
+};
 
 // Socket.io Real-time Updates
 socket.on('inventory_update', () => {

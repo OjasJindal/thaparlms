@@ -50,6 +50,7 @@
                     <button class="tab-btn user-only" data-tab="history">My History</button>
                     <button class="tab-btn user-only" data-tab="print">Print Store</button>
                     <button class="tab-btn admin-only" data-tab="fines" style="display: none;">Fines</button>
+                    <button class="tab-btn admin-only" data-tab="users" style="display: none;">Users</button>
                     <button class="tab-btn admin-only" data-tab="admin" style="display: none;">Admin</button>
                 </div>
 
@@ -156,6 +157,39 @@
                         </p>
                         <div id="all-transactions" class="grid-container">
                             <!-- Transactions will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab -->
+                <div id="users-tab" class="tab-content">
+                    <h2>👥 User Management</h2>
+
+                    <!-- Add User Form -->
+                    <div class="admin-card" style="max-width: 600px; margin: 0 auto 2rem;">
+                        <h3>Add New User</h3>
+                        <form id="add-user-form">
+                            <input type="text" id="new-user-username" placeholder="Username" required>
+                            <input type="password" id="new-user-password" placeholder="Password" required>
+                            <select id="new-user-role" required
+                                style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--dark-lighter); color: var(--text); font-size: 1rem;">
+                                <option value="" disabled selected>Select Role</option>
+                                <option value="student">Student</option>
+                                <option value="faculty">Faculty</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                            <button type="submit">Add User</button>
+                        </form>
+                    </div>
+
+                    <!-- All Users List -->
+                    <div class="admin-card">
+                        <h3>All Users</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.875rem;">
+                            Manage system users
+                        </p>
+                        <div id="all-users" class="grid-container">
+                            <!-- Users will be loaded here -->
                         </div>
                     </div>
                 </div>
