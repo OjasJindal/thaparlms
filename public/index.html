@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Login View -->
+        <div id="login-view" class="view active">
+            <div class="login-card">
+                <h1>Library Portal</h1>
+                <p>Enter your credentials to access the system.</p>
+                <form id="login-form">
+                    <input type="text" id="username" placeholder="Username" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                    <select id="role-select" required
+                        style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 1rem;">
+                        <option value="" disabled selected>Select Role</option>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <button type="submit">Login</button>
+                </form>
+                <div id="login-error" class="error-msg"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view">
+            <header>
+                <div class="logo">📚 LMS</div>
+                <div class="user-info">
+                    <span id="user-display">User</span>
+                    <button id="logout-btn">Logout</button>
+                </div>
+            </header>
+
+            <main>
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="books">Books</button>
+                    <button class="tab-btn" data-tab="slots">Study Slots</button>
+                    <button class="tab-btn user-only" data-tab="history">My History</button>
+                    <button class="tab-btn user-only" data-tab="print">Print Store</button>
+                    <button class="tab-btn admin-only" data-tab="fines" style="display: none;">Fines</button>
+                    <button class="tab-btn admin-only" data-tab="admin" style="display: none;">Admin</button>
+                </div>
+
+                <!-- Books Tab -->
+                <div id="books-tab" class="tab-content active">
+                    <div class="search-bar">
+                        <input type="text" id="book-search" placeholder="Search by title or author...">
+                    </div>
+                    <div id="book-list" class="grid-container">
+                        <!-- Books will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Slots Tab -->
+                <div id="slots-tab" class="tab-content">
+                    <h2>Study Zone Availability</h2>
+
+                    <!-- Filter and Search Controls -->
+                    <div class="slot-controls">
+                        <div class="filter-group">
+                            <label for="slot-filter">Filter:</label>
+                            <select id="slot-filter">
+                                <option value="all">All Seats</option>
+                                <option value="free">Available Only</option>
+                                <option value="booked">Occupied Only</option>
+                            </select>
+                        </div>
+                        <div class="search-group">
+                            <input type="text" id="slot-search"
+                                placeholder="Search seat number (e.g., Seat 5, Room 2)...">
+                        </div>
+                    </div>
+
+                    <div id="slot-list" class="grid-container">
+                        <!-- Slots will be injected here -->
+                    </div>
+
+                    <!-- DevTools for Simulation -->
+                    <div class="dev-tools">
+                        <h3>🛠 Developer Tools</h3>
+                        <p>Simulate user leaving a zone to trigger auto-dismissal.</p>
+                        <div id="active-slots"></div>
+                    </div>
+                </div>
+
+                <!-- History Tab -->
+                <div id="history-tab" class="tab-content">
+                    <h2>My Borrowing History</h2>
+                    <ul id="history-list">
+                        <!-- History items -->
+                    </ul>
+                </div>
+
+                <!-- Print Store Tab -->
+                <div id="print-tab" class="tab-content">
+                    <h2>🖨️ Print Store</h2>
+                    <div class="admin-card" style="max-width: 600px; margin: 0 auto;">
+                        <h3>Upload & Print Document</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.875rem;">
+                            Select a file from your device and submit it for printing
+                        </p>
+
+                        <div id="print-upload-area"
+                            style="margin-bottom: 1.5rem; padding: 2rem; border: 2px dashed var(--border); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s;">
+                            <input type="file" id="print-file-input" style="display: none;"
+                                accept=".pdf,.doc,.docx,.txt">
+                            <div id="upload-placeholder">
+                                <p style="font-size: 3rem; margin: 0;">📄</p>
+                                <p style="font-size: 1rem; font-weight: 600; margin: 0.5rem 0 0 0;">Click to select a
+                                    file</p>
+                                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
+                                    Supported formats: PDF, DOC, DOCX, TXT</p>
+                            </div>
+                            <div id="file-selected" style="display: none;">
+                                <p style="font-size: 3rem; margin: 0;">📋</p>
+                                <p id="selected-filename"
+                                    style="font-size: 1rem; font-weight: 600; margin: 0.5rem 0 0 0;"></p>
+                                <p id="selected-filesize"
+                                    style="font-size: 0.875rem; color: var(--text-muted); margin: 0.25rem 0 0 0;"></p>
+                            </div>
+                        </div>
+
+                        <button id="print-btn" disabled
+                            style="width: 100%; padding: 0.875rem; font-size: 1rem; font-weight: 600; background: linear-gradient(135deg, var(--secondary), #d946a6); color: white; border: none; border-radius: 8px; cursor: not-allowed; opacity: 0.5; transition: all 0.3s;">
+                            🖨️ Print Document
+                        </button>
+
+                        <div id="print-status"
+                            style="margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none;">
+                            <!-- Print status will be shown here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fines Tab -->
+                <div id="fines-tab" class="tab-content">
+                    <h2>Fines Management</h2>
+
+                    <!-- All Transactions -->
+                    <div class="admin-card">
+                        <h3>📚 All Book Transactions</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.875rem;">
+                            View all book borrowings and calculate fines
+                        </p>
+                        <div id="all-transactions" class="grid-container">
+                            <!-- Transactions will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Tab -->
+                <div id="admin-tab" class="tab-content">
+                    <h2>Admin Dashboard</h2>
+
+                    <!-- Add Book -->
+                    <div class="admin-card">
+                        <h3>Add New Book</h3>
+                        <form id="add-book-form">
+                            <input type="text" id="new-title" placeholder="Title" required>
+                            <input type="text" id="new-author" placeholder="Author" required>
+                            <input type="number" id="new-floor" placeholder="Floor" required>
+                            <input type="text" id="new-shelf" placeholder="Shelf" required>
+                            <button type="submit">Add Book</button>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

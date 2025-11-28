@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.env
+.DS_Store
+*.db-journal
+add_books.js
+check_db.js
+check_users.js
+*.backup
