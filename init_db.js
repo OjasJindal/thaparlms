@@ -134,6 +134,39 @@ const initDB = async () => {
                 slotStmt.finalize(() => console.log(`Seeded ${slots.length} slots.`));
             });
         });
+
+        // Seed an overdue transaction for demo purposes
+        setTimeout(() => {
+            const now = new Date();
+            const issueDate = new Date(now);
+            issueDate.setDate(issueDate.getDate() - 12); // Borrowed 12 days ago
+
+            const dueDate = new Date(issueDate);
+            dueDate.setDate(dueDate.getDate() + 7); // Due 7 days after issue = 5 days overdue
+
+            // First mark book as borrowed
+            db.run(`UPDATE books SET status = 'borrowed' WHERE id = 1`, (err) => {
+                if (err) {
+                    console.error('Error updating book status:', err.message);
+                    return;
+                }
+
+                // Create overdue transaction
+                db.run(
+                    `INSERT INTO transactions (user_id, book_id, issue_date, due_date, status, fine) 
+                     VALUES (?, ?, ?, ?, ?, ?)`,
+                    [2, 1, issueDate.toISOString(), dueDate.toISOString(), 'borrowed', 0],
+                    function (err) {
+                        if (err) {
+                            console.error('Error creating overdue transaction:', err.message);
+                        } else {
+                            const daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
+                            console.log(`✅ Overdue transaction created (${daysOverdue} days overdue, ₹${daysOverdue * 100} fine expected)`);
+                        }
+                    }
+                );
+            });
+        }, 1000); // Wait for other seeds to complete
     });
 };
 
